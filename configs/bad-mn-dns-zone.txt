@@ -1,0 +1,56 @@
+; DNS Zone file for bad.mn
+; Replace [YOUR_MAIL_SERVER_IP] with your actual mail server IP address
+; Replace [YOUR_DKIM_PUBLIC_KEY] with your generated DKIM public key
+
+$ORIGIN bad.mn.
+$TTL 3600
+
+; SOA Record (managed by FreeDNS)
+@               IN      SOA     ns1.afraid.org. dnsadmin.afraid.org. (
+                                2025070101      ; Serial number (update when changes made)
+                                86400           ; Refresh
+                                7200            ; Retry
+                                2419200         ; Expire
+                                3600            ; Minimum TTL
+                                )
+
+; Name Servers (FreeDNS)
+@               IN      NS      ns1.afraid.org.
+@               IN      NS      ns2.afraid.org.
+@               IN      NS      ns3.afraid.org.
+@               IN      NS      ns4.afraid.org.
+
+; A Records
+@               IN      A       169.47.130.75
+@               IN      A       70.39.97.239
+mail            IN      A       [YOUR_MAIL_SERVER_IP]
+mail2           IN      A       [YOUR_BACKUP_MAIL_SERVER_IP]    ; Optional
+
+; MX Records (Mail Exchange)
+@               IN      MX      10      mail.bad.mn.
+@               IN      MX      20      mail2.bad.mn.           ; Optional backup
+
+; SPF Record (Sender Policy Framework)
+@               IN      TXT     "v=spf1 a:mail.bad.mn ip4:[YOUR_MAIL_SERVER_IP] ~all"
+
+; DKIM Record (DomainKeys Identified Mail)
+; Generate this key using: opendkim-genkey -t -s selector1 -d bad.mn
+selector1._domainkey    IN      TXT     "v=DKIM1; k=rsa; p=[YOUR_DKIM_PUBLIC_KEY]"
+
+; DMARC Record (Domain-based Message Authentication, Reporting, and Conformance)
+_dmarc          IN      TXT     "v=DMARC1; p=quarantine; rua=mailto:dmarc@bad.mn; ruf=mailto:dmarc@bad.mn; sp=quarantine; adkim=r; aspf=r"
+
+; Additional CNAME Records for convenience
+smtp            IN      CNAME   mail.bad.mn.
+imap            IN      CNAME   mail.bad.mn.
+pop3            IN      CNAME   mail.bad.mn.
+webmail         IN      CNAME   mail.bad.mn.
+
+; Optional: Autoconfig for email clients
+autoconfig      IN      CNAME   mail.bad.mn.
+autodiscover    IN      CNAME   mail.bad.mn.
+
+; CAA Records for SSL certificate authority authorization (optional)
+@               IN      CAA     0 issue "letsencrypt.org"
+@               IN      CAA     0 issuewild "letsencrypt.org"
+@               IN      CAA     0 iodef "mailto:admin@bad.mn"
